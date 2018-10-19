@@ -1,8 +1,8 @@
 package packets;
 
-public class ACK {
-    private byte[] opcode;
-    private byte[] blocknum;
+public class ACK{
+    private short opcode;
+    private short blocknum;
 
         /*
     TODO TFTP Formats
@@ -15,16 +15,23 @@ public class ACK {
              --------------------
     */
 
-    public ACK(byte[] opcode, byte[] blocknum) {
-        this.opcode = opcode;
+    public ACK(short blocknum) {
+        this.opcode = (short)04;
         this.blocknum = blocknum;
     }
 
-    public byte[] getOpcode() {
+    public short getOpcode() {
         return opcode;
     }
 
-    public byte[] getBlocknum() {
+    public short getBlocknum() {
         return blocknum;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ACK &&
+                ((ACK) obj).getOpcode()==this.opcode &&
+                ((ACK) obj).getBlocknum()==this.blocknum;
     }
 }

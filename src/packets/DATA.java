@@ -1,9 +1,12 @@
 package packets;
 
-public class DATA {
-    byte[] opcode;
-    byte[] BlockNum;
-    byte[] data;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+
+public class DATA{
+    private short opcode;
+    private short block_num;
+    private byte[] data;
 
     /*
     TODO TFTP Formats
@@ -16,21 +19,29 @@ public class DATA {
               ---------------------------------
     */
 
-    public DATA(byte[] opcode, byte[] blockNum, byte[] data) {
-        this.opcode = opcode;
-        BlockNum = blockNum;
+    public DATA(short block_num, byte[] data) {
+        this.opcode = (short)03;
+        this.block_num = block_num;
         this.data = data;
     }
 
-    public byte[] getOpcode() {
+    public short getOpcode() {
         return opcode;
     }
 
-    public byte[] getBlockNum() {
-        return BlockNum;
+    public short getBlockNum() {
+        return block_num;
     }
 
     public byte[] getData() {
         return data;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DATA &&
+                ((DATA) obj).getOpcode()==this.opcode &&
+                ((DATA) obj).getBlockNum()==this.block_num &&
+                Arrays.equals(((DATA) obj).getData(),this.data);
     }
 }

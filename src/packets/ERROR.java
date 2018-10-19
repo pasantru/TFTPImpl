@@ -1,8 +1,8 @@
 package packets;
 
-public class ERROR {
-    private byte[]  opcode;
-    private byte[] errorCode;
+public class ERROR{
+    private short opcode;
+    private short errorCode;
     private String errMesg;
 
     /*TODO Error messages
@@ -27,21 +27,29 @@ public class ERROR {
         ERROR | 05      | ErrorCode |  ErrMsg  |   0   |
                ----------------------------------------
     */
-    public ERROR(byte[] opcode, byte[] errorCode, String errMesg) {
-        this.opcode = opcode;
+    public ERROR(short errorCode, String errMesg) {
+        this.opcode = (short)05;
         this.errorCode = errorCode;
         this.errMesg = errMesg;
     }
 
-    public byte[] getOpcode() {
+    public short getOpcode() {
         return opcode;
     }
 
-    public byte[] getErrorCode() {
+    public short getErrorCode() {
         return errorCode;
     }
 
     public String getErrMesg() {
         return errMesg;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ERROR &&
+                ((ERROR) obj).getOpcode()==this.opcode &&
+                ((ERROR) obj).getErrMesg().equals(this.errMesg) &&
+                ((ERROR) obj).getErrorCode()==this.errorCode;
     }
 }
