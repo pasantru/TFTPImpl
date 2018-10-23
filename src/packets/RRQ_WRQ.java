@@ -50,22 +50,22 @@ public class RRQ_WRQ{
     }
 
     public byte[] returnPacketContent() throws IOException {
-        ByteArrayOutputStream ba = new ByteArrayOutputStream();
-        byte[] bukkake_of_bytes;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] return_bytes;
         try{
-            ba.write(this.opcode);
-            ba.write(filename.getBytes());
-            ba.write(0);
-            ba.write(mode.getBytes());
-            ba.write(0);
+            baos.write(this.opcode);
+            baos.write(filename.getBytes());
+            baos.write(0);
+            baos.write(mode.getBytes());
+            baos.write(0);
 
         }catch (IOException e) {
             e.printStackTrace();
         }
 
-        bukkake_of_bytes = ba.toByteArray();
-        ba.close();
-        return bukkake_of_bytes;
+        return_bytes = baos.toByteArray();
+        baos.close();
+        return return_bytes;
 
     }
 }
