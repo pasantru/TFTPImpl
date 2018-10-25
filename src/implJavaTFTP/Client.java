@@ -34,44 +34,10 @@ public class Client {
             if(command.contains("connect")) host = InetAddress.getByName(getContentFromCommand(command,"\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b"));
             else if(command.contains("mode")) mode = getContentFromCommand(command, "[a-z]+");
             else if(command.contains("put")) {
-                filename = getContentFromCommand(command, "[a-zA-Z-_]+[.][a-z]{3}");
-                File file = new File(filename);
-                //TODO finish the put code
+                //TODO finish the tftp code that does the put method
 
             } else if(command.contains("get")){
-                filename = getContentFromCommand(command, "[a-zA-Z-_]+[.][a-z]{3}");
-                byte [] bytes_to_send = factory.returnPacket("WRQ",filename, mode).returnPacketContent();
-                int tries = 0;
-                boolean receivedResponse = false;
-                DatagramPacket request,
-                                recieve = null;
-                DATA data;
-                do {
-                    do {
-                        request = new DatagramPacket(bytes_to_send, bytes_to_send.length, host, port);
-                        socket.send(request);
-                        socket.setSoTimeout(TIMEOUTTIME);
-
-                        try {
-                            recieve = new DatagramPacket(new byte[MAXSIZE], MAXSIZE);
-                            socket.receive(recieve);
-                            if (recieve.getPort() == port && recieve.getAddress() == host)
-                                throw new IOException("Received packet from an unknown source");
-                            receivedResponse = true;
-                        } catch (SocketTimeoutException e) {
-                            tries++;
-                            System.out.println("Timeout, " + (MAXRETRY - tries) + "left.");
-                        }
-                        //TODO file storing and showing on the screen idk
-                    } while ((!receivedResponse) && (tries < MAXRETRY));
-
-                    data = new DATA(recieve.getData());
-                    bytes_to_send = factory.returnPacket(data.getBlockNum()).returnPacketContent();
-                    socket.setSoTimeout(0);
-
-                    //TODO get a better expression to represent ending the transmission when the data is smaller than 512
-                } while(data.getData().length==512);
-
+                //TODO finish the tftp code that does the get method
             } else if(command.equals("quit")) break;
         }
         socket.close();
