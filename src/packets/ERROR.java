@@ -1,5 +1,7 @@
 package packets;
 
+import java.io.*;
+
 public class ERROR{
     private short opcode;
     private short errorCode;
@@ -31,6 +33,47 @@ public class ERROR{
         this.opcode = (short)05;
         this.errorCode = errorCode;
         this.errMesg = errMesg;
+    }
+    
+    public ERROR(byte[] array){
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(array);
+        DataInputStream in = new DataInputStream(byteStream);
+        int curr_pos = 0;
+        byte[] output;
+        try{
+            this.opcode = in.readShort();
+            curr_pos += 2;
+            this.errorCode = in.readShort();
+            curr_pos += 2;
+            output = new byte[array.length-curr_pos];
+            in.readFully(output, 0, array.length-curr_pos);
+            this.errMesg = new String(output);
+            byteStream.close();
+            in.close();
+        }catch(IOException ex){
+            ex.printStackTrace();
+        }
+    }
+
+
+    public byte[] returnPacketContent() throws IOException{
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        DataOutputStream in = new DataOutputStream(byteStream);
+        byte[] return_bytes;
+        try{
+            in.writeShort(this.opcode);
+            in.writeShort(this.errorCode);
+            in.writeBytes(this.errMesg);
+            in.write(0);
+        }catch (IOException e) {
+            System.err.println("Error: Fuck!");
+            e.printStackTrace();
+        }
+
+        return_bytes = byteStream.toByteArray();
+        in.close();
+        byteStream.close();
+        return return_bytes;
     }
 
     public short getOpcode() {

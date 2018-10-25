@@ -1,7 +1,6 @@
 package packets;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 public class RRQ_WRQ{
     private short opcode;
@@ -27,7 +26,55 @@ public class RRQ_WRQ{
         this.filename = filename;
         this.mode = mode;
     }
+    public RRQ_WRQ(byte[] array){
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(array);
+        DataInputStream in = new DataInputStream(byteStream);
+        byte[] output;
+        int first_pos = -1,
+                last_pos = -1;
 
+        for (int i = 2; i < array.length; i++) {
+            if(first_pos==-1 && array[i]==(byte)0) first_pos = i;
+            else if (array[i]==(byte)0) last_pos = i;
+        }
+        System.out.println("First 0: " + first_pos + ", Second 0: " + last_pos);
+        try{
+            this.opcode = in.readShort();
+            output = new byte[first_pos-2];
+            in.readFully(output, 0, first_pos-2);
+            this.filename = new String(output);
+            output = new byte[last_pos-first_pos-1];
+            in.skipBytes(1);
+            in.readFully(output, 0, last_pos-first_pos-1);
+            this.mode = new String(output);
+            in.skipBytes(1);
+            in.close();
+            byteStream.close();
+        }catch (IOException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public byte[] returnPacketContent() throws IOException {
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        DataOutputStream in = new DataOutputStream(byteStream);
+        byte[] return_bytes;
+        try{
+            in.writeShort(this.opcode);
+            in.writeBytes(filename);
+            in.write(0);
+            in.writeBytes(mode);
+            in.write(0);
+
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return_bytes = byteStream.toByteArray();
+        in.close();
+        byteStream.close();
+        return return_bytes;
+    }
 
     public short getOpcode() {
         return opcode;
@@ -47,25 +94,5 @@ public class RRQ_WRQ{
                 (((RRQ_WRQ) obj).getOpcode())==this.opcode &&
                 ((RRQ_WRQ) obj).getFilename().equals(this.filename) &&
                 ((RRQ_WRQ) obj).getMode().equals(this.mode);
-    }
-
-    public byte[] returnPacketContent() throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] return_bytes;
-        try{
-            baos.write(this.opcode);
-            baos.write(filename.getBytes());
-            baos.write(0);
-            baos.write(mode.getBytes());
-            baos.write(0);
-
-        }catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return_bytes = baos.toByteArray();
-        baos.close();
-        return return_bytes;
-
     }
 }
