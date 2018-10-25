@@ -1,6 +1,6 @@
 package packets;
 
-import java.lang.reflect.Array;
+import java.io.*;
 import java.util.Arrays;
 
 public class DATA{
@@ -23,6 +23,44 @@ public class DATA{
         this.opcode = (short)03;
         this.block_num = block_num;
         this.data = data;
+    }
+
+    public DATA(byte[] array){
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(array);
+        DataInputStream in = new DataInputStream(byteStream);
+        int curr_pos = 0;
+        byte[] output;
+        try{
+            this.opcode = in.readShort();
+            curr_pos += 2;
+            this.block_num = in.readShort();
+            curr_pos += 2;
+            in.readFully(this.data, 0, array.length-curr_pos);
+            byteStream.close();
+            in.close();
+        }catch(IOException ex){
+            ex.printStackTrace();
+        }
+    }
+
+
+    public byte[] returnPacketContent() throws IOException{
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        DataOutputStream in = new DataOutputStream(byteStream);
+        byte[] return_bytes;
+        try{
+            in.writeShort(this.opcode);
+            in.writeShort(this.block_num);
+            in.write(this.data);
+        }catch (IOException e) {
+            System.err.println("Error: Fuck!");
+            e.printStackTrace();
+        }
+
+        return_bytes = byteStream.toByteArray();
+        in.close();
+        byteStream.close();
+        return return_bytes;
     }
 
     public short getOpcode() {
