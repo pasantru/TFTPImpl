@@ -1,14 +1,11 @@
 package res;
 
-import sun.misc.IOUtils;
-
 import java.nio.file.Files;
 import java.io.File;
 import java.io.*;
 
-class FileCreator{
-    public static byte[] contentsOfFileText(String file_name) throws IOException{
-        //TODO
+public class FileCreator{
+    public static byte[] contentsOfFileText(String file_name){
         try(BufferedReader br = new BufferedReader(new FileReader(file_name))) {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
@@ -19,13 +16,21 @@ class FileCreator{
                 line = br.readLine();
             }
             return sb.toString().getBytes();
+        } catch (IOException ex){
+            ex.printStackTrace();
         }
+        return null;
     }
-    public static byte[] contentsOfFile(String file_name) throws IOException{
-        return Files.readAllBytes(new File(file_name).toPath());
+    public static byte[] contentsOfFile(String file_name){
+        try{
+            return Files.readAllBytes(new File(file_name).toPath());
+        }catch (IOException ex){
+            ex.printStackTrace();
+        }
+        return null;
     }
     public static void createFileFromContentsBin(String file_name, byte[] contents){
-        File newFile = new File(file_name);
+        new File(file_name);
         try (FileOutputStream fos = new FileOutputStream(file_name)) {
             fos.write(contents);
         /* fos.close(); There is no more need for this line since you had

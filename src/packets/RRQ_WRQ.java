@@ -7,8 +7,7 @@ public class RRQ_WRQ{
     private String filename;
     private String mode;
 
-    /*
-    TODO TFTP Formats
+    /*TFTP Formats
 
         Type    Op #    Format without header
 
@@ -20,8 +19,6 @@ public class RRQ_WRQ{
     */
 
     public RRQ_WRQ(short opcode, String filename, String mode) {
-        //TODO filename terminated in zero byte
-        //TODO modes netascii, octet
         this.opcode = opcode;
         this.filename = filename;
         this.mode = mode;

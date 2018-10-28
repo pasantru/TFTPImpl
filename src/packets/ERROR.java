@@ -7,7 +7,7 @@ public class ERROR{
     private short errorCode;
     private String errMesg;
 
-    /*TODO Error messages
+    /*Error messages
         Value       Meaning
         0           Not defined, see error message (if any).
         1           File not found.
@@ -19,8 +19,7 @@ public class ERROR{
         7           No such user.
     */
 
-    /*
-    TODO TFTP Formats
+    /*TFTP Formats
 
         Type    Op #    Format without header
 

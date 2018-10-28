@@ -1,36 +1,33 @@
 package testing;
 
-import packets.DATA;
-import packets.RRQ_WRQ;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+import res.FileCreator;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class test {
-    public static void main(String argv[]) throws IOException{
-        RRQ_WRQ data = new RRQ_WRQ((short)01, "/tmp/var1/var2/var3/varx/OS.img", "netascii");
-        byte[] array = data.returnPacketContent();
-        RRQ_WRQ rq = new RRQ_WRQ(array);
-        System.out.println(rq.getFilename());
-        System.out.println(rq.getMode());
+    public static void main(String argv[]) throws IOException {
+//        String separation = "\t\t\t\t\t\t\t\t\t\t ";
+//        System.out.println(("----> RRQ " + "filename" + " " + "mode"));
+//        System.out.println((separation + "<---- ACK " + "0"));
+//        System.out.println(("----> DATA 1" + "512 bytes"));
+//        System.out.println((separation + "<---- ACK " + "1"));
+//        System.out.println(("----> DATA 2" + "512 bytes"));
+//        System.out.println((separation + "<---- ACK " + "2"));
+//        System.out.println(("----> DATA 2" + "10 bytes"));
+//        System.out.println((separation + "<---- ACK " + "3"));
+//        System.out.println((separation + "<---- ERROR " + "03 " + "File not found "));
+//
+//        System.out.println(("% P: paquetes perdidos; % R: paquetes retransmitidos"));
 
-        for (int i = 0; i < array.length; i++) {
-            System.out.print(array[i] + ", ");
-        }
-        System.out.println(array.length);
-        int first_pos = -1,
-                last_pos = -1;
-        for (int i = 0; i < array.length; i++) {
-            if(first_pos==-1 && array[i]==(byte)0) first_pos = i;
-            else if (array[i]==(byte)0) last_pos = i;
-        }
-        System.out.println(first_pos - 1);
-        System.out.println(last_pos - first_pos);
+        int compare = 3;
+        short shortnum = (short)03;
+        byte[] hello = {(byte)0,(byte)4,(byte)0,(byte)3};
+        System.out.println(hello[2] + hello[3]);
+        System.out.println(shortnum);
 
-        System.out.println(data.equals(rq));
+        if(hello[0]==0 && hello[1]==4 && shortnum==(short)compare) System.out.println(true);
+        else System.out.println(false);
     }
 }

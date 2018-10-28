@@ -6,8 +6,7 @@ public class ACK{
     private short opcode;
     private short block_num;
 
-        /*
-    TODO TFTP Formats
+        /*TFTP Formats
 
         Type    Op #    Format without header
 

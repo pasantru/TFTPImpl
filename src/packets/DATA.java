@@ -8,8 +8,7 @@ public class DATA{
     private short block_num;
     private byte[] data;
 
-    /*
-    TODO TFTP Formats
+    /*TFTP Formats
 
         Type    Op #    Format without header
 
