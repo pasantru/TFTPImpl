@@ -5,39 +5,26 @@ import java.io.File;
 import java.io.*;
 
 public class FileCreator{
-    public static byte[] contentsOfFileText(String file_name){
-        try(BufferedReader br = new BufferedReader(new FileReader(file_name))) {
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
 
-            while (line != null) {
-                sb.append(line);
-                sb.append(System.lineSeparator());
-                line = br.readLine();
-            }
-            return sb.toString().getBytes();
-        } catch (IOException ex){
-            ex.printStackTrace();
-        }
-        return null;
-    }
-    public static byte[] contentsOfFile(String file_name){
+    private static final int MAX_LENGTH = 512;
+    public static byte[] contentsOfFile(String file_name, int off) throws FileNotFoundException{
+        File file = new File(file_name);
+        FileInputStream fis = new FileInputStream(file.getAbsolutePath());
+
+        int size = MAX_LENGTH<=((int)file.length()-off)?MAX_LENGTH:((int)file.length()-off);
+        byte[] buffer = new byte[size];
+
+        file.getAbsolutePath();
         try{
-            return Files.readAllBytes(new File(file_name).toPath());
-        }catch (IOException ex){
-            ex.printStackTrace();
-        }
-        return null;
+            fis.read(buffer, off, size);
+        }catch (IOException ex){ex.printStackTrace();}
+        return buffer;
     }
+
     public static void createFileFromContentsBin(String file_name, byte[] contents){
         new File(file_name);
         try (FileOutputStream fos = new FileOutputStream(file_name)) {
             fos.write(contents);
-        /* fos.close(); There is no more need for this line since you had
-          created the instance of "fos" inside the try. And this will
-          automatically close the OutputStream */
-        }catch (IOException ex){
-            ex.printStackTrace();
-        }
+        }catch (IOException ex){ex.printStackTrace();}
     }
 }

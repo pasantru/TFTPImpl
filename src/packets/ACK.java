@@ -35,7 +35,7 @@ public class ACK{
         }
     }
     
-    public byte[] returnPacketContent() throws IOException{
+    public byte[] returnPacketContent() throws IOException {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         DataOutputStream in = new DataOutputStream(byteStream);
         byte[] return_bytes;
@@ -46,10 +46,10 @@ public class ACK{
             System.err.println("Error: Fuck!");
             e.printStackTrace();
         }
-
         return_bytes = byteStream.toByteArray();
         in.close();
         byteStream.close();
+
         return return_bytes;
     }
 

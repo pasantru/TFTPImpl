@@ -1,33 +1,38 @@
 package testing;
 
 import res.FileCreator;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+
+import java.io.*;
+import java.net.InetAddress;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 public class test {
+    private static final int MAX_LENGTH = 512;
+
     public static void main(String argv[]) throws IOException {
-//        String separation = "\t\t\t\t\t\t\t\t\t\t ";
-//        System.out.println(("----> RRQ " + "filename" + " " + "mode"));
-//        System.out.println((separation + "<---- ACK " + "0"));
-//        System.out.println(("----> DATA 1" + "512 bytes"));
-//        System.out.println((separation + "<---- ACK " + "1"));
-//        System.out.println(("----> DATA 2" + "512 bytes"));
-//        System.out.println((separation + "<---- ACK " + "2"));
-//        System.out.println(("----> DATA 2" + "10 bytes"));
-//        System.out.println((separation + "<---- ACK " + "3"));
-//        System.out.println((separation + "<---- ERROR " + "03 " + "File not found "));
-//
-//        System.out.println(("% P: paquetes perdidos; % R: paquetes retransmitidos"));
+        InetAddress host = null;
+        if(argv.length == 1) host = InetAddress.getByName(argv[0]);
+        BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+        String command;
+        while(true){
+            System.out.printf("%s ","tftp>");
+            command = stdIn.readLine();
+            String filename = command.substring(command.lastIndexOf(' ')+1);
+            System.out.println(filename);
+            System.out.println(filename.length());
 
-        int compare = 3;
-        short shortnum = (short)03;
-        byte[] hello = {(byte)0,(byte)4,(byte)0,(byte)3};
-        System.out.println(hello[2] + hello[3]);
-        System.out.println(shortnum);
+//            System.out.println(host.toString());
+        }
+    }
 
-        if(hello[0]==0 && hello[1]==4 && shortnum==(short)compare) System.out.println(true);
-        else System.out.println(false);
+
+    private static String getContentFromCommand(String command, String regexr){
+        Pattern pattern = Pattern.compile(regexr);
+        Matcher matcher = pattern.matcher(command);
+        if (!matcher.find()) throw new IllegalArgumentException("Invalid format!");
+        return matcher.group(0);
     }
 }

@@ -4,9 +4,6 @@ import packets.DATA;
 import packets.ERROR;
 import packets.Factory;
 import res.FileCreator;
-import res.PacketException;
-
-import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
@@ -30,50 +27,77 @@ public class TFTP_C {
         this.filename = filename;
         this.mode = mode;
         this.protocol = protocol;
-        if(mode.equals("netascii")) contents = FileCreator.contentsOfFileText(filename);
-        else if (mode.equals("octet")) contents = FileCreator.contentsOfFile(filename);
+
+        //TODO Question replace err
+//        if(mode.equals("ascii")) contents = FileCreator.contentsOfFileText(filename);
+//        else if (mode.equals("octet")) contents = FileCreator.contentsOfFile(filename);
     }
 
     public void tftp(){
-        int tries = 0;
-        boolean receivedResponse = false;
-        byte[] buff = new byte[MAXSIZE];
-        Factory factory = new Factory();
-
-
         switch (protocol){
-            case "put": File file = new File(filename);
-                        try{
-                            DatagramSocket socket = new DatagramSocket();
-
-                        }catch(IOException ex){
-                            ex.printStackTrace();
-                        }
-
-
-                        break;
-
-            case "get":
-                        break;
+            case "put": method_put();break;
+            case "get": method_get();break;
         }
-
-        //TODO put
-
-
-
-        //TODO get
-
-
-    }
-    private void method_get(){
-
     }
 
-
-    private void method_put(){
-        int tries = 0;
+    private static void method_get(){
+        int tries;
         String packet_type;
-        boolean receivedResponse = false,
+        boolean receivedResponse,
+                moar_data = true;
+        byte [] buffer = new byte[10];
+        Factory factory = new Factory();
+        DATA d;
+        try{
+            int packet_block_num = 1;
+            byte[] bytes_to_send = factory.returnPacket("RRQ",filename, mode).returnPacketContent();
+            packet_type = "RRQ";
+            DatagramSocket socket = new DatagramSocket();
+            DatagramPacket request,
+                    receive = null;
+
+            do{
+
+                tries = 0;
+                receivedResponse = false;
+                do{
+                    //TODO check
+                    request = new DatagramPacket(bytes_to_send, bytes_to_send.length, address, port);
+                    socket.send(request);
+                    if(packet_type.equals("RRQ")) System.out.println(("----> RRQ " + filename + " " + mode));
+                    else if(packet_type.equals("ACK")) System.out.println("----> ACK " + packet_block_num);
+                    socket.setSoTimeout(TIMEOUTTIME);
+                    try {
+
+                        receive = new DatagramPacket(new byte[MAXSIZE], MAXSIZE);
+                        socket.receive(receive);
+                        checkServer(socket, receive);
+                        receivedResponse = true;
+                        byte[] buff = receive.getData();
+                        compareOpcode(buff, packet_block_num);
+
+                    } catch (SocketTimeoutException e) {tries++;System.out.println("Timeout, " + (MAXRETRY - tries) + "left.");
+                    } catch (IOException ex){ex.printStackTrace();}
+                    packet_type = "ACK";
+                    //TODO file storing and showing on the screen idk
+                }while((!receivedResponse) && (tries < MAXRETRY));
+
+                d = new DATA(receive.getData());
+                buffer = joinByteArrays(buffer, d.getData());
+                socket.setSoTimeout(0);
+
+            }while(moar_data);
+            FileCreator.createFileFromContentsBin(filename, buffer);
+        }catch (IOException ex){
+            ex.printStackTrace();
+        }
+    }
+
+
+    private static void method_put(){
+        int tries;
+        String packet_type;
+        boolean receivedResponse,
                     moar_data = true;
         Factory factory = new Factory();
         int start_pos = 0,
@@ -82,75 +106,99 @@ public class TFTP_C {
             int packet_block_num = 1;
             byte[] bytes_to_send = factory.returnPacket("WRQ",filename, mode).returnPacketContent();
             packet_type = "WRQ";
-            byte[] buff;
             DatagramSocket socket = new DatagramSocket();
-            DatagramPacket request,
-                            receive;
+            DatagramPacket request;
 
             do {
                 tries = 0;
+                receivedResponse = false;
+                request = new DatagramPacket(bytes_to_send, bytes_to_send.length, address, port);
 
                 do {
-                    request = new DatagramPacket(bytes_to_send, bytes_to_send.length, address, port);
                     socket.send(request);
                     if(packet_type.equals("WRQ")) System.out.println(("----> WRQ " + filename + " " + mode));
                     else if(packet_type.equals("DATA")) System.out.println(("----> DATA " + packet_block_num + " " + (end_pos-start_pos) + "bytes"));
                     socket.setSoTimeout(TIMEOUTTIME);
-
                     try {
-                        receive = new DatagramPacket(new byte[MAXSIZE], MAXSIZE);
+
+                        DatagramPacket receive = new DatagramPacket(new byte[MAXSIZE], MAXSIZE);
                         socket.receive(receive);
-
-
-                        /*TODO ERROR packet
-                                here if the packet recieved is from an unknown source it will send an error packet, then delete the fucking Exception.
-                                but check if it is sent */
-                        if (receive.getPort() != port && receive.getAddress() != address){
-                            bytes_to_send = new ERROR((short) 05, "The packet recieved is from an unknown source.").returnPacketContent();
-                            request = new DatagramPacket(bytes_to_send, bytes_to_send.length, address, port);
-                            socket.send(request);
-                        }
-
+                        checkServer(socket, receive);
                         receivedResponse = true;
-                        buff = receive.getData();
+                        byte[] buff = receive.getData();
                         compareOpcode(buff, packet_block_num);
 
-                    } catch (SocketTimeoutException e) {
-                        tries++;
-                        System.out.println("Timeout, " + (MAXRETRY - tries) + "left.");
-                    }
+                    } catch (SocketTimeoutException e) {tries++;System.out.println("Timeout, " + (MAXRETRY - tries) + "left.");
+                    } catch (IOException ex){ex.printStackTrace();}
 
-                    //TODO file storing and showing on the screen idk
+
                 } while ((!receivedResponse) && (tries < MAXRETRY));
-
                 //TODO the file must be sent piece by piece
-                start_pos = packet_block_num*512;
-                if(start_pos>contents.length)                       moar_data = false;
-                if((packet_block_num*512+512) < contents.length)    end_pos = packet_block_num*512+512;
-                else                                                end_pos = contents.length-1;
-                bytes_to_send = new DATA((short)packet_block_num, Arrays.copyOfRange(contents, start_pos, end_pos)).returnPacketContent();
+                if(receivedResponse){
+                    packet_type = "DATA";
+                    start_pos = packet_block_num*512;
+
+                    if(start_pos > contents.length)                     moar_data = false;
+                    if((packet_block_num*512+512) < contents.length)    end_pos = packet_block_num*512+512;
+                    else                                                end_pos = contents.length-1;
+
+                    bytes_to_send = new DATA((short)packet_block_num, Arrays.copyOfRange(contents, start_pos, end_pos)).returnPacketContent();
+                }
 
                 socket.setSoTimeout(0);
-                receivedResponse = false;
 
             } while(moar_data);
 
             //TODO print the packets lost and the packets sent
-        }catch(IOException ex){
+        }catch(IOException ex){ex.printStackTrace();}
+    }
+
+    /**
+     *
+     * @param socket
+     * @param packet_block_num
+     */
+
+    private static boolean receivePacket(DatagramSocket socket, int packet_block_num, int tries){
+        boolean receivedResponse = false;
+
+        return receivedResponse;
+    }
+
+    /**
+     *
+     * @param socket socket for the transaction
+     * @param receive DatagramPacket to send
+     *
+     */
+
+    private static void checkServer(DatagramSocket socket, DatagramPacket receive){
+        Factory factory = new Factory();
+        /*  TODO ERROR packet
+            here if the packet recieved is from an unknown source it will send an error packet, then delete the fucking Exception.
+            but check if it is sent */
+        try{
+            if (receive.getPort() != port && receive.getAddress() != address){
+                byte[] bytes_to_send = factory.returnPacket((short) 05, "The packet recieved is from an unknown source.").returnPacketContent();
+                DatagramPacket request = new DatagramPacket(bytes_to_send, bytes_to_send.length, address, port);
+                socket.send(request);
+            }
+        }catch (IOException ex){
             ex.printStackTrace();
         }
     }
 
+
     /** This function prints a user friendly view of the communication between the server and the client
      *
      * @param buff the contents of the packet
-     * @param packet_block_num the block numm currently sernt by the client
+     * @param packet_block_num the block num currently sent by the client
      *
      */
-    private void compareOpcode(byte [] buff, int packet_block_num){
+    private static void compareOpcode(byte[] buff, int packet_block_num){
         if(buff[0]==0 && buff[1]==4){
             ACK ack = new ACK(buff);
-            if(ack.getBlocknum()==(short)packet_block_num)        System.out.println((SEPARATION + "<---- ACK " + "3"));
+            if(ack.getBlocknum()==(short)packet_block_num)        System.out.println((SEPARATION + "<---- ACK " + packet_block_num));
             //TODO else wrong block num ??
         } else if(buff[0]==0 && buff[1]==5){
             ERROR error = new ERROR(buff);
@@ -158,4 +206,9 @@ public class TFTP_C {
         }
     }
 
+    private static byte[] joinByteArrays(byte[] array1, byte[] array2){
+        byte[] joinedArray = Arrays.copyOf(array1, array1.length + array2.length);
+        System.arraycopy(array2, 0, joinedArray, array1.length, array2.length);
+        return joinedArray;
+    }
 }
