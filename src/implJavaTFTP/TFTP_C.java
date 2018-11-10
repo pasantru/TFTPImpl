@@ -43,6 +43,7 @@ public class TFTP_C {
     private static void method_get(){
         int tries;
         String packet_type;
+        StringBuilder sb = new StringBuilder();
         boolean receivedResponse,
                 moar_data = true;
         byte [] buffer = new byte[10];
@@ -57,6 +58,7 @@ public class TFTP_C {
                     receive = null;
 
             do{
+
 
                 tries = 0;
                 receivedResponse = false;
@@ -76,8 +78,16 @@ public class TFTP_C {
                         byte[] buff = receive.getData();
                         compareOpcode(buff, packet_block_num);
 
-                    } catch (SocketTimeoutException e) {tries++;System.out.println("Timeout, " + (MAXRETRY - tries) + "left.");
-                    } catch (IOException ex){ex.printStackTrace();}
+                    } catch (SocketTimeoutException e) {
+                        tries++;
+                        if(packet_type.equals("RRQ"))
+                            System.out.println(("----> RRQ " + filename + " " + mode));
+                        else if(packet_type.equals("ACK"))
+                            System.out.println("----> ACK " + packet_block_num);
+//                        System.out.println("Timeout, " + (MAXRETRY - tries) + "left.");
+                    } catch (IOException ex){
+                        ex.printStackTrace();
+                    }
                     packet_type = "ACK";
                     //TODO file storing and showing on the screen idk
                 }while((!receivedResponse) && (tries < MAXRETRY));
@@ -96,7 +106,8 @@ public class TFTP_C {
 
     private static void method_put(){
         int tries;
-        String packet_type;
+        String packet_type,
+                    lost = "";
         boolean receivedResponse,
                     moar_data = true;
         Factory factory = new Factory();
@@ -116,8 +127,10 @@ public class TFTP_C {
 
                 do {
                     socket.send(request);
-                    if(packet_type.equals("WRQ")) System.out.println(("----> WRQ " + filename + " " + mode));
-                    else if(packet_type.equals("DATA")) System.out.println(("----> DATA " + packet_block_num + " " + (end_pos-start_pos) + "bytes"));
+                    if(packet_type.equals("WRQ"))
+                        System.out.println(("----> WRQ " + filename + " " + mode));
+                    else if(packet_type.equals("DATA"))
+                        System.out.println(("----> DATA " + lost + " " + packet_block_num + " " + (bytes_to_send.length-4) + "bytes"));
                     socket.setSoTimeout(TIMEOUTTIME);
                     try {
 
@@ -128,8 +141,14 @@ public class TFTP_C {
                         byte[] buff = receive.getData();
                         compareOpcode(buff, packet_block_num);
 
-                    } catch (SocketTimeoutException e) {tries++;System.out.println("Timeout, " + (MAXRETRY - tries) + "left.");
-                    } catch (IOException ex){ex.printStackTrace();}
+                    } catch (SocketTimeoutException e) {
+                        tries++;
+                        //TODO lost
+                        lost = "(R)";
+//                        System.out.println("Timeout, " + (MAXRETRY - tries) + "left.");
+                    } catch (IOException ex){
+                        ex.printStackTrace();
+                    }
 
 
                 } while ((!receivedResponse) && (tries < MAXRETRY));
@@ -138,11 +157,9 @@ public class TFTP_C {
                     packet_type = "DATA";
                     start_pos = packet_block_num*512;
 
-                    if(start_pos > contents.length)                     moar_data = false;
-                    if((packet_block_num*512+512) < contents.length)    end_pos = packet_block_num*512+512;
-                    else                                                end_pos = contents.length-1;
-
-                    bytes_to_send = new DATA((short)packet_block_num, Arrays.copyOfRange(contents, start_pos, end_pos)).returnPacketContent();
+                    if(start_pos > contents.length)
+                        moar_data = false;
+                    bytes_to_send = new DATA((short)packet_block_num, FileCreator.contentsOfFile(filename, start_pos)).returnPacketContent();
                 }
 
                 socket.setSoTimeout(0);

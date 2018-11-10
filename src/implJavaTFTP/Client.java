@@ -71,18 +71,19 @@ public class Client {
         sb.append("\t\tSet the mode for transfers; transfer-mode may be one of ascii or binary.  The default is ascii.\n\n");
 
         sb.append("\tput file\n");
-        sb.append("\tput localfile remotefile\n");
-        /*sb.append("\tput file1 file2 ... fileN remote-directory\n");
+        /*sb.append("\tput localfile remotefile\n");
+        sb.append("\tput file1 file2 ... fileN remote-directory\n");
         sb.append("\t\tPut a file or set of files to the specified remote file or directory.  The destination can be in one of two forms: a\n");
         sb.append("\t\tfilename on the remote host, if the host has already been specified, or a string of the form hosts:filename to spec‐\n");
         sb.append("\t\tify both a host and filename at the same time.  If the latter form is used, the hostname specified becomes the\n");
         sb.append("\t\tdefault for future transfers.  If the remote-directory form is used, the remote host is assumed to be a UNIX machine.\n\n");*/
-
+        /*
         sb.append("\tquit     Exit tftp.  An end of file also exits.\n\n");
 
         sb.append("\tstatus   Show current status.\n\n");
 
         sb.append("\tverbose  Toggle verbose mode.\n\n");
+        */
         System.out.println(sb.toString());
     }
 

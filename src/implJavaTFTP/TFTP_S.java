@@ -56,8 +56,19 @@ public class TFTP_S {
         int packet_num = 0;
         byte[] buffer = new byte[BUFFER_SIZE];
         DATA d = null;
-        //TODO FINISH
+        DatagramPacket send;
+        try{
+            bytes_to_send = f.returnPacket((short) packet_num).returnPacketContent();
+            do{
+                send = new DatagramPacket(bytes_to_send, bytes_to_send.length, address, port);
+                socket.setSoTimeout(TIMEOUTTIME);
+                socket.send(send);
+                checkClient();
+                receivedResponse = true;
+            }while((!receivedResponse)&&(tries < MAXRETRY));
+            //TODO FINISH
 
+        }
 
     }
 
