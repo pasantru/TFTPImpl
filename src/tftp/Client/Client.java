@@ -1,6 +1,9 @@
-package implJavaTFTP;
+package tftp.Client;
+
+import tftp.FileUsage.FileCreator;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
@@ -9,8 +12,7 @@ import java.util.regex.Pattern;
 public class Client {
     public static void main(String argv[]) throws IOException {
         InetAddress host = null;
-        //TODO the port is not 69 must change
-        int port = 69;
+        int port = 6790;
         if(argv.length == 1) host = InetAddress.getByName(argv[0]);
         BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
         TFTP_C client;
@@ -22,18 +24,21 @@ public class Client {
             System.out.printf("%s ","tftp>");
             command = stdIn.readLine();
             if(command.equals("help")) getHelpPliz();
-            else if(command.contains("connect")) host = InetAddress.getByName(getContentFromCommand(command,"[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}"));
-            else if(command.contains("mode")) mode = getContentFromCommand(command.substring(4), "[a-z]+");
-            else if(command.contains("put")) {
-//                filename = getContentFromCommand(command.substring(3), "[a-zA-Z-_]+([.][a-z]{1,5})+");
+            else if(command.startsWith("connect")){
+                host = InetAddress.getByName(getContentFromCommand(command,"[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}"));
+
+            }else if(command.startsWith("mode")) mode = getContentFromCommand(command.substring(4), "[a-z]+");
+            else if(command.toUpperCase().startsWith("PUT")) {
                 filename = command.substring(command.lastIndexOf(' ')+1);
-                client = new TFTP_C(host, port, filename, mode, "put");
+                client = new TFTP_C(host, port, filename, mode, "PUT");
                 client.tftp();
-            } else if(command.contains("get")){
-//                filename = getContentFromCommand(command.substring(3), "[a-zA-Z-_]+([.][a-z]{1,5})+");
-                filename = command.substring(command.lastIndexOf(' ')+1);
-                client = new TFTP_C(host, port, filename, mode, "get");
+            } else if(command.toUpperCase().startsWith("GET")) {
+                filename = command.substring(command.lastIndexOf(' ') + 1);
+                client = new TFTP_C(host, port, filename, mode, "GET");
                 client.tftp();
+            }else if(command.startsWith("info")){
+                filename = command.substring(command.lastIndexOf(' ') + 1);
+                FileCreator.getInfo(filename);
             } else if(command.equals("quit") || command.equals("q")) break;
         }
     }
@@ -71,18 +76,19 @@ public class Client {
         sb.append("\t\tSet the mode for transfers; transfer-mode may be one of ascii or binary.  The default is ascii.\n\n");
 
         sb.append("\tput file\n");
-        sb.append("\tput localfile remotefile\n");
-        /*sb.append("\tput file1 file2 ... fileN remote-directory\n");
+        /*sb.append("\tput localfile remotefile\n");
+        sb.append("\tput file1 file2 ... fileN remote-directory\n");
         sb.append("\t\tPut a file or set of files to the specified remote file or directory.  The destination can be in one of two forms: a\n");
         sb.append("\t\tfilename on the remote host, if the host has already been specified, or a string of the form hosts:filename to spec‐\n");
         sb.append("\t\tify both a host and filename at the same time.  If the latter form is used, the hostname specified becomes the\n");
         sb.append("\t\tdefault for future transfers.  If the remote-directory form is used, the remote host is assumed to be a UNIX machine.\n\n");*/
-
+        /*
         sb.append("\tquit     Exit tftp.  An end of file also exits.\n\n");
 
         sb.append("\tstatus   Show current status.\n\n");
 
         sb.append("\tverbose  Toggle verbose mode.\n\n");
+        */
         System.out.println(sb.toString());
     }
 

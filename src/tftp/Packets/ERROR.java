@@ -1,4 +1,4 @@
-package packets;
+package tftp.Packets;
 
 import java.io.*;
 
@@ -34,19 +34,21 @@ public class ERROR{
         this.errMesg = errMesg;
     }
     
-    public ERROR(byte[] array){
+    public ERROR(byte[] array) throws PacketFormatException{
         ByteArrayInputStream byteStream = new ByteArrayInputStream(array);
         DataInputStream in = new DataInputStream(byteStream);
         int curr_pos = 0;
         byte[] output;
         try{
             this.opcode = in.readShort();
+            if(this.opcode != 05) throw new PacketFormatException("ERROR");
             curr_pos += 2;
             this.errorCode = in.readShort();
             curr_pos += 2;
-            output = new byte[array.length-curr_pos];
-            in.readFully(output, 0, array.length-curr_pos);
-            this.errMesg = new String(output);
+            output = new byte[array.length-curr_pos-1];
+            in.readFully(output, 0, array.length-curr_pos-1);
+            String s = new String(output);
+            this.errMesg = s;
             byteStream.close();
             in.close();
         }catch(IOException ex){

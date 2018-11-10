@@ -1,4 +1,4 @@
-package packets;
+package tftp.Packets;
 
 import java.io.*;
 
@@ -24,7 +24,7 @@ public class RRQ_WRQ{
         this.mode = mode;
     }
 
-    public RRQ_WRQ(byte[] array){
+    public RRQ_WRQ(byte[] array) throws PacketFormatException{
         ByteArrayInputStream byteStream = new ByteArrayInputStream(array);
         DataInputStream in = new DataInputStream(byteStream);
         byte[] output;
@@ -33,16 +33,17 @@ public class RRQ_WRQ{
 
         for (int i = 2; i < array.length; i++) {
             if(first_pos==-1 && array[i]==(byte)0) first_pos = i;
-            else if (array[i]==(byte)0) last_pos = i;
+            else if (last_pos==-1 && array[i]==(byte)0) last_pos = i;
         }
-        System.out.println("First 0: " + first_pos + ", Second 0: " + last_pos);
         try{
             this.opcode = in.readShort();
+            if(this.opcode != 01 && this.opcode != 02) throw new PacketFormatException("RRQ_WRQ");
             output = new byte[first_pos-2];
             in.readFully(output, 0, first_pos-2);
             this.filename = new String(output);
             output = new byte[last_pos-first_pos-1];
             in.skipBytes(1);
+            System.out.println(last_pos);
             in.readFully(output, 0, last_pos-first_pos-1);
             this.mode = new String(output);
             in.skipBytes(1);
@@ -86,6 +87,15 @@ public class RRQ_WRQ{
 
     public String getMode() {
         return mode;
+    }
+
+    @Override
+    public String toString() {
+        return "RRQ_WRQ{" +
+                "opcode=" + opcode +
+                ", filename='" + filename + '\'' +
+                ", mode='" + mode + '\'' +
+                '}';
     }
 
     @Override

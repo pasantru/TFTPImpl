@@ -1,64 +1,56 @@
-package packets;
+package tftp.Packets;
 
 import java.io.*;
-import java.util.Arrays;
 
-public class DATA{
+public class ACK{
     private short opcode;
     private short block_num;
-    private byte[] data;
 
-    /*TFTP Formats
+        /*TFTP Formats
 
         Type    Op #    Format without header
 
-              2 bytes     2 bytes       n bytes
-              ---------------------------------
-        DATA | 03     |   Block #   |   Data   |
-              ---------------------------------
+              2 bytes 2 bytes
+             -------------------
+        ACK |  04   |  Block #  |
+             --------------------
     */
 
-    public DATA(short block_num, byte[] data) {
-        this.opcode = (short)03;
+    public ACK(short block_num) {
+        this.opcode = (short)04;
         this.block_num = block_num;
-        this.data = data;
     }
-
-    public DATA(byte[] array){
+    
+    public ACK(byte[] array) throws PacketFormatException{
         ByteArrayInputStream byteStream = new ByteArrayInputStream(array);
         DataInputStream in = new DataInputStream(byteStream);
-        int curr_pos = 0;
         byte[] output;
         try{
             this.opcode = in.readShort();
-            curr_pos += 2;
+            if(this.opcode != 04) throw new PacketFormatException("ACK");
             this.block_num = in.readShort();
-            curr_pos += 2;
-            in.readFully(this.data, 0, array.length-curr_pos);
             byteStream.close();
             in.close();
         }catch(IOException ex){
             ex.printStackTrace();
         }
     }
-
-
-    public byte[] returnPacketContent() throws IOException{
+    
+    public byte[] returnPacketContent() throws IOException {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         DataOutputStream in = new DataOutputStream(byteStream);
         byte[] return_bytes;
         try{
             in.writeShort(this.opcode);
             in.writeShort(this.block_num);
-            in.write(this.data);
         }catch (IOException e) {
             System.err.println("Error: Fuck!");
             e.printStackTrace();
         }
-
         return_bytes = byteStream.toByteArray();
         in.close();
         byteStream.close();
+
         return return_bytes;
     }
 
@@ -66,19 +58,14 @@ public class DATA{
         return opcode;
     }
 
-    public short getBlockNum() {
+    public short getBlocknum() {
         return block_num;
-    }
-
-    public byte[] getData() {
-        return data;
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof DATA &&
-                ((DATA) obj).getOpcode()==this.opcode &&
-                ((DATA) obj).getBlockNum()==this.block_num &&
-                Arrays.equals(((DATA) obj).getData(),this.data);
+        return obj instanceof ACK &&
+                ((ACK) obj).getOpcode()==this.opcode &&
+                ((ACK) obj).getBlocknum()==this.block_num;
     }
 }
